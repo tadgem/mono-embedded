@@ -19,7 +19,7 @@ message("Mono Include Dirs : ${MONO_INCLUDE_DIRS}")
 message("Required Flags : ${MONO_CFLAGS}")
 
 
-add_executable(${PROJECT_NAME} main.cpp)
+add_executable(${PROJECT_NAME} main.cpp MonoUtils.hpp)
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${MONO_INCLUDE_DIRS})
 target_link_directories(${PROJECT_NAME} PUBLIC ${MONO_LIBRARY_DIRS})
