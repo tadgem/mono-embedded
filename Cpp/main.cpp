@@ -169,6 +169,7 @@ void Playground()
         // We can safely write a value to the field using this property
     }
 
+    // MonoMethod* eventRaiser = mono_event_get_raise_method(nullptr);
 }
 
 int main()
