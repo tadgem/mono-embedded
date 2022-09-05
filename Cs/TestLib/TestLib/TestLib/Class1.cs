@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
 public class TestLib
 {
@@ -26,5 +27,26 @@ public class TestLib
     {
         PublicFloat += value;
     }
+
+    public void TestInternalCalls()
+    {
+        PrintString();
+        IntPtr instance1 = CreateTestClassDefault();
+        IntPtr instance2 = CreateTestClass(2305);
+        Console.WriteLine($"Instance 1 Number : {GetTestClassNumber(instance1)}");
+        Console.WriteLine($"Instance 2 Number : {GetTestClassNumber(instance2)}");
+    }
+
+    [MethodImplAttribute(MethodImplOptions.InternalCall)]
+    extern static void PrintString();
+
+    [MethodImplAttribute(MethodImplOptions.InternalCall)]
+    extern static IntPtr CreateTestClassDefault();
+
+    [MethodImplAttribute(MethodImplOptions.InternalCall)]
+    extern static IntPtr CreateTestClass(int arg);
+
+    [MethodImplAttribute(MethodImplOptions.InternalCall)]
+    extern static int GetTestClassNumber(IntPtr instance);
 
 }

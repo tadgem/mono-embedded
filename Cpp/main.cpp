@@ -98,6 +98,62 @@ void CallIncrementFloatVar(MonoObject* objectInstance, float value)
     mono_runtime_invoke(method, objectInstance, args, &exception);
 }
 
+void CallTestInternalCalls(MonoObject* objectInstance)
+{
+    MonoClass* instanceClass = mono_object_get_class(objectInstance);
+
+    MonoMethod* method = mono_class_get_method_from_name(instanceClass, "TestInternalCalls", 0);
+
+    if (method == nullptr)
+    {
+        std::cerr << "Failed to find method TestInternalCalls\n";
+        return;
+    }
+
+    // Call the C# method on the objectInstance instance, and get any potential exceptions
+    MonoObject* exception = nullptr;
+    mono_runtime_invoke(method, objectInstance, nullptr, &exception);
+}
+
+class TestClass
+{
+public:
+    int Number;
+
+    TestClass()
+    {
+        Number = 30241;
+    }
+
+    TestClass(int arg)
+    {
+        Number = arg;
+    }
+};
+
+extern "C"
+{
+    void PrintString()
+    {
+        std::cout << "Hello world!\n";
+    }
+
+    TestClass* CreateTestClassDefault()
+    {
+        return new TestClass();
+    }
+
+    TestClass* CreateTestClass(int arg)
+    {
+        return new TestClass(arg);
+    }
+
+    int GetTestClassNumber(TestClass* instance)
+    {
+        return instance->Number;
+    }
+}
+
 void InitMono()
 {
     std::string root(std::getenv("MONO_DIR"));
@@ -119,12 +175,17 @@ void InitMono()
     }
 
     mono_domain_set(s_AppDomain, true);
-    MonoAssembly* s_AppAssembly = LoadCSharpAssembly("TestLib.dll");
+    s_AppAssembly = LoadCSharpAssembly("TestLib.dll");
 
     if (s_AppAssembly == nullptr)
     {
         return;
     }
+
+    mono_add_internal_call("TestLib::PrintString", PrintString);
+    mono_add_internal_call("TestLib::CreateTestClassDefault", CreateTestClassDefault);
+    mono_add_internal_call("TestLib::CreateTestClass", CreateTestClass);
+    mono_add_internal_call("TestLib::GetTestClassNumber", GetTestClassNumber);
 
     PrintAssemblyInfo(s_AppAssembly);
 }
@@ -169,6 +230,7 @@ void Playground()
         // We can safely write a value to the field using this property
     }
 
+    CallTestInternalCalls(classInstance);
     // MonoMethod* eventRaiser = mono_event_get_raise_method(nullptr);
 }
 
