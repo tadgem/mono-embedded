@@ -1,16 +1,13 @@
 #include "MonoUtils.hpp"
 
 static std::vector<CsTypeInfo> s_TypeInfos = std::vector<CsTypeInfo>();
-static std::string s_DomainName     = "Test";
-const std::string s_AppDomainName   = "TestApp";
-const std::string s_CsClassName     = "TestLib";
+static std::string s_DomainName      = "Test";
+const  std::string s_AppDomainName   = "TestApp";
+const  std::string s_CsClassName     = "TestLib";
 
 static MonoDomain*      s_RootDomain;
 static MonoDomain*      s_AppDomain;
 static MonoAssembly*    s_AppAssembly;
-
-
-
 
 void PrintAssemblyInfo(MonoAssembly* assembly)
 {
