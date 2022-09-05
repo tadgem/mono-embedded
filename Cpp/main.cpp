@@ -35,6 +35,21 @@ void PrintAssemblyInfo(MonoAssembly* assembly)
 
         s_TypeInfos.emplace_back(typeInfo);
     }
+
+    const MonoTableInfo* assemblyRefTable = mono_image_get_table_info(image, MONO_TABLE_ASSEMBLYREF);
+    int32_t numRefs = mono_table_info_get_rows(assemblyRefTable);
+
+    for (int32_t i = 0; i < numRefs; i++)
+    {
+        uint32_t cols[MONO_ASSEMBLYREF_SIZE];
+        mono_metadata_decode_row(assemblyRefTable, i, cols, MONO_ASSEMBLYREF_SIZE);
+        std::string name = std::string(mono_metadata_string_heap(image, cols[MONO_ASSEMBLYREF_NAME]));
+
+        uint32_t majorVersion = cols[MONO_ASSEMBLYREF_MAJOR_VERSION];
+        uint32_t minorVersion = cols[MONO_ASSEMBLYREF_MINOR_VERSION];
+
+        std::cout << "Assembly " << name << " : " << majorVersion << "." << minorVersion << std::endl;
+    }
 }
 
 
