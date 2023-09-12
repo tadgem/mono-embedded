@@ -37,6 +37,25 @@ public class TestLib
         Console.WriteLine($"Instance 2 Number : {GetTestClassNumber(instance2)}");
     }
 
+    public void CreateInterfaceImpls()
+    {
+        var u1 = new OnUpdate1();
+        var u2 = new OnUpdate2();
+        var u3 = new OnUpdate3();
+
+        var i1 = new OnInit1();
+        var i2 = new OnInit2();
+        var i3 = new OnInit3();
+
+        var s1 = new OnStart1();
+        var s2 = new OnStart2();
+        var s3 = new OnStart3();
+
+        var c1 = new OnCleanup1();
+        var c2 = new OnCleanup2();
+        var c3 = new OnCleanup3();
+    }
+
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
     extern static void PrintString();
 

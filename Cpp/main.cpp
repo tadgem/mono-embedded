@@ -1,6 +1,12 @@
 #include "MonoUtils.hpp"
 
-static std::vector<CsTypeInfo> s_TypeInfos = std::vector<CsTypeInfo>();
+static std::vector<CsTypeInfo>          s_TypeInfos             = std::vector<CsTypeInfo>();
+static std::vector<CsInterfaceImplInfo> s_InterfaceImplsInfos   = std::vector<CsInterfaceImplInfo>();
+static std::vector<CsMethodImplInfo>    s_MethodImplsInfos      = std::vector<CsMethodImplInfo>();
+static std::vector<CsTypeRefInfo>       s_TypeRefInfos          = std::vector<CsTypeRefInfo>();
+static std::vector<CsAssemblyRefInfo>   s_AssemblyRefInfos      = std::vector<CsAssemblyRefInfo>();
+
+
 static std::string s_DomainName      = "Test";
 const  std::string s_AppDomainName   = "TestApp";
 const  std::string s_CsClassName     = "TestLib";
@@ -12,8 +18,21 @@ static MonoAssembly*    s_AppAssembly;
 void PrintAssemblyInfo(MonoAssembly* assembly)
 {
     MonoImage* image = mono_assembly_get_image(assembly);
+
     const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
+    const MonoTableInfo* interfaceImplTable = mono_image_get_table_info(image, MONO_TABLE_INTERFACEIMPL);
+    const MonoTableInfo* typeSpecTable = mono_image_get_table_info(image, MONO_TABLE_TYPESPEC);
+    const MonoTableInfo* methodImplTable = mono_image_get_table_info(image, MONO_TABLE_METHODIMPL);
+    const MonoTableInfo* typeRefTable = mono_image_get_table_info(image, MONO_TABLE_TYPEREF);
+    const MonoTableInfo* assemblyRefTable = mono_image_get_table_info(image, MONO_TABLE_ASSEMBLYREF);
+
     int32_t numTypes = mono_table_info_get_rows(typeDefinitionsTable);
+    int32_t numInterfaces = mono_table_info_get_rows(interfaceImplTable);
+    int32_t numTypeSpecs = mono_table_info_get_rows(typeSpecTable);
+    int32_t numMethodImpls = mono_table_info_get_rows(methodImplTable);
+    int32_t numTypeRefs = mono_table_info_get_rows(typeRefTable);
+    int32_t numRefs = mono_table_info_get_rows(assemblyRefTable);
+
 
     for (int32_t i = 0; i < numTypes; i++)
     {
@@ -23,7 +42,7 @@ void PrintAssemblyInfo(MonoAssembly* assembly)
         std::string nameSpace = std::string(mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAMESPACE]));
         std::string name = std::string(mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAME]));
 
-        std::cout << "Type Name : " << name << "\n" << "Type Namespace : " << nameSpace << "\n";
+        std::cout << "Type Name : " << name << " : " << "Type Namespace : " << nameSpace << "\n";
 
         CsTypeInfo typeInfo{
             name,
@@ -33,8 +52,63 @@ void PrintAssemblyInfo(MonoAssembly* assembly)
         s_TypeInfos.emplace_back(typeInfo);
     }
 
-    const MonoTableInfo* assemblyRefTable = mono_image_get_table_info(image, MONO_TABLE_ASSEMBLYREF);
-    int32_t numRefs = mono_table_info_get_rows(assemblyRefTable);
+    for (int32_t i = 0; i < numInterfaces; i++)
+    {
+        uint32_t cols[MONO_INTERFACEIMPL_SIZE];
+        mono_metadata_decode_row(interfaceImplTable, i, cols, MONO_INTERFACEIMPL_SIZE);
+
+        std::string interface = std::string(mono_metadata_string_heap(image, cols[MONO_INTERFACEIMPL_INTERFACE]));
+        std::string klass = std::string(mono_metadata_string_heap(image, cols[MONO_INTERFACEIMPL_CLASS]));
+
+        std::cout << "Class Name : " << klass << " : " << "Interface : " << interface << "\n";
+
+        CsInterfaceImplInfo interfaceImplInfo{
+                interface,
+                klass
+        };
+
+        s_InterfaceImplsInfos.emplace_back(interfaceImplInfo);
+    }
+
+    for (int32_t i = 0; i < numTypeSpecs; i++)
+    {
+        uint32_t cols[MONO_TYPESPEC_SIZE];
+        mono_metadata_decode_row(typeSpecTable, i, cols, MONO_TYPESPEC_SIZE);
+
+        std::string signature = std::string(mono_metadata_string_heap(image, cols[MONO_TYPESPEC_SIGNATURE]));
+
+        std::cout << "Type Spec Signature : " << signature << "\n";
+
+    }
+
+    for (int32_t i = 0; i < numMethodImpls; i++)
+    {
+        uint32_t cols[MONO_METHODIMPL_SIZE];
+        mono_metadata_decode_row(typeSpecTable, i, cols, MONO_METHODIMPL_SIZE);
+
+        std::string declaration = std::string(mono_metadata_string_heap(image, cols[MONO_METHODIMPL_DECLARATION]));
+        std::string body = std::string(mono_metadata_string_heap(image, cols[MONO_METHODIMPL_BODY]));
+        std::string klass = std::string(mono_metadata_string_heap(image, cols[MONO_METHODIMPL_CLASS]));
+
+        CsMethodImplInfo methodInfo {declaration, body, klass};
+        s_MethodImplsInfos.push_back(methodInfo);
+        std::cout << "Method Impl : Declaration : " << declaration << " : Body : " << body << " : Class : "<< klass  <<"\n";
+
+    }
+
+    for (int32_t i = 0; i < numTypeRefs; i++)
+    {
+        uint32_t cols[MONO_TYPEREF_SIZE];
+        mono_metadata_decode_row(typeRefTable, i, cols, MONO_TYPEREF_SIZE);
+
+        std::string name = std::string(mono_metadata_string_heap(image, cols[MONO_TYPEREF_NAME]));
+        std::string nameSpace = std::string(mono_metadata_string_heap(image, cols[MONO_TYPEREF_NAMESPACE]));
+        std::string scope = std::string(mono_metadata_string_heap(image, cols[MONO_TYPEREF_SCOPE]));
+
+        CsTypeRefInfo methodInfo {name, nameSpace, scope};
+        s_TypeRefInfos.push_back(methodInfo);
+        std::cout << "Type Ref : Name : " << name << " : Namespace : " << nameSpace << " : Scope : "<< scope  <<"\n";
+    }
 
     for (int32_t i = 0; i < numRefs; i++)
     {
@@ -45,6 +119,8 @@ void PrintAssemblyInfo(MonoAssembly* assembly)
         uint32_t majorVersion = cols[MONO_ASSEMBLYREF_MAJOR_VERSION];
         uint32_t minorVersion = cols[MONO_ASSEMBLYREF_MINOR_VERSION];
 
+        CsAssemblyRefInfo assemblyRefInfo {name, majorVersion, minorVersion};
+        s_AssemblyRefInfos.push_back(assemblyRefInfo);
         std::cout << "Assembly " << name << " : " << majorVersion << "." << minorVersion << std::endl;
     }
 }
@@ -169,7 +245,7 @@ extern "C"
 void InitMono()
 {
     std::string root(std::getenv("MONO_DIR"));
-    std::string assemblyDir = root + "/lib/mono/4.5";
+    std::string assemblyDir = root + "/lib/mono/4.8-api";
     mono_set_assemblies_path(assemblyDir.c_str());
 
     s_RootDomain = mono_jit_init(s_DomainName.c_str());

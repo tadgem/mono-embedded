@@ -33,4 +33,6 @@
 *obj
 *.vs
 *\bin
-*/bin
+*/cmake-build-debug
+*.idea
+*.vscode

@@ -24,6 +24,33 @@ struct CsTypeInfo
     std::string m_TypeNamespace;
 };
 
+struct CsInterfaceImplInfo
+{
+    std::string m_InterfaceName;
+    std::string m_ClassName;
+};
+
+struct CsMethodImplInfo
+{
+    std::string m_Declaration;
+    std::string m_Body;
+    std::string m_ClassName;
+};
+
+struct CsTypeRefInfo
+{
+    std::string m_Name;
+    std::string m_Namespace;
+    std::string m_Scope;
+};
+
+struct CsAssemblyRefInfo
+{
+    std::string m_Name;
+    uint32_t    m_Major;
+    uint32_t    m_Minor;
+};
+
 char* ReadBytes(const std::string& filepath, uint32_t* outSize)
 {
     std::ifstream stream(filepath, std::ios::binary | std::ios::ate);
