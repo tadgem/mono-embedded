@@ -221,6 +221,7 @@ public:
 
 extern "C"
 {
+    typedef void (*action_callback_t) ();
     void PrintString()
     {
         std::cout << "Hello world!\n";
@@ -239,6 +240,15 @@ extern "C"
     int GetTestClassNumber(TestClass* instance)
     {
         return instance->Number;
+    }
+
+    void RegisterDelegate(MonoObject* callback)
+    {
+        MonoClass* klass = mono_object_get_class(callback);
+        std::string klassName(mono_class_get_name(klass));
+        MonoClassField* klassFields = mono_class_get_fields(klass, nullptr);
+        mono_runtime_delegate_invoke(callback, NULL, NULL);
+        int i = 1;
     }
 }
 
@@ -274,6 +284,7 @@ void InitMono()
     mono_add_internal_call("TestLib::CreateTestClassDefault", CreateTestClassDefault);
     mono_add_internal_call("TestLib::CreateTestClass", CreateTestClass);
     mono_add_internal_call("TestLib::GetTestClassNumber", GetTestClassNumber);
+    mono_add_internal_call("TestLib::RegisterDelegate", RegisterDelegate);
 
     PrintAssemblyInfo(s_AppAssembly);
 }

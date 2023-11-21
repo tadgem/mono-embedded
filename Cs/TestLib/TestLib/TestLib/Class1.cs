@@ -35,6 +35,12 @@ public class TestLib
         IntPtr instance2 = CreateTestClass(2305);
         Console.WriteLine($"Instance 1 Number : {GetTestClassNumber(instance1)}");
         Console.WriteLine($"Instance 2 Number : {GetTestClassNumber(instance2)}");
+        RegisterDelegate(TestDelegate);
+    }
+
+    public void TestDelegate()
+    {
+        Console.WriteLine($"I am being called from a delegate") ;
     }
 
     public void CreateInterfaceImpls()
@@ -67,5 +73,9 @@ public class TestLib
 
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
     extern static int GetTestClassNumber(IntPtr instance);
+
+    [MethodImplAttribute(MethodImplOptions.InternalCall)]
+    extern static void RegisterDelegate(Action callback);
+
 
 }
