@@ -250,11 +250,25 @@ extern "C"
         mono_runtime_delegate_invoke(callback, NULL, NULL);
         int i = 1;
     }
+
+    void RegisterDelegateWithArgs(MonoObject* callback) {
+        void* args[1];
+        args[0] = nullptr;
+        MonoObject* exc;
+        mono_runtime_delegate_invoke(callback, args, &exc);
+
+        if(exc) {
+            MonoClass* excKlass = mono_object_get_class(exc);
+            std::string exceptionKlassName(mono_class_get_name(excKlass));
+            std::cout << "Encountered" << exceptionKlassName << "Exception";
+        }
+        int i = 1;
+    }
 }
 
 void InitMono()
 {
-    std::string root(std::getenv("MONO_DIR"));
+    std::string root(std::getenv("MONO_PATH"));
     std::string assemblyDir = root + "/lib/mono/4.8-api";
     mono_set_assemblies_path(assemblyDir.c_str());
 
@@ -285,6 +299,7 @@ void InitMono()
     mono_add_internal_call("TestLib::CreateTestClass", CreateTestClass);
     mono_add_internal_call("TestLib::GetTestClassNumber", GetTestClassNumber);
     mono_add_internal_call("TestLib::RegisterDelegate", RegisterDelegate);
+    mono_add_internal_call("TestLib::RegisterDelegateWithArgs", RegisterDelegateWithArgs);
 
     PrintAssemblyInfo(s_AppAssembly);
 }

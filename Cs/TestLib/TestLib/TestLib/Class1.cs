@@ -6,6 +6,9 @@ public class TestLib
     public float PublicFloat = 1.0f;
 
     private string _name = "Johnny B. Goode";
+
+    delegate void ArgDelegate(IntPtr ptr);
+
     public string Name { 
         get 
         { 
@@ -36,11 +39,17 @@ public class TestLib
         Console.WriteLine($"Instance 1 Number : {GetTestClassNumber(instance1)}");
         Console.WriteLine($"Instance 2 Number : {GetTestClassNumber(instance2)}");
         RegisterDelegate(TestDelegate);
+        RegisterDelegateWithArgs(TestDelegateWithArgs);
     }
 
     public void TestDelegate()
     {
         Console.WriteLine($"I am being called from a delegate") ;
+    }
+
+    public void TestDelegateWithArgs(IntPtr arg)
+    {
+        Console.WriteLine($"I am being called from a delegate : arg {arg}");
     }
 
     public void CreateInterfaceImpls()
@@ -76,6 +85,9 @@ public class TestLib
 
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
     extern static void RegisterDelegate(Action callback);
+
+    [MethodImplAttribute(MethodImplOptions.InternalCall)]
+    extern static void RegisterDelegateWithArgs(ArgDelegate callback);
 
 
 }
